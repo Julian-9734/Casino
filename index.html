@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Casino</title>
+<style>
+  /* Grundlayout */
+  body {
+    margin: 0;
+    background: radial-gradient(circle at center, #0b0b0b, #220000);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: #fff;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+  }
+
+  .casino-container {
+    background: linear-gradient(145deg, #3b0b0b, #7a2c0c);
+    border-radius: 25px;
+    padding: 30px 25px 40px 25px;
+    box-shadow: 0 0 40px #d2a100cc;
+    width: 420px;
+    user-select: none;
+    text-align: center;
+    position: relative;
+  }
+
+  h1 {
+    font-family: 'Luckiest Guy', cursive;
+    font-size: 2.5rem;
+    letter-spacing: 2px;
+    color: #ffd700;
+    text-shadow: 0 0 10px #ffd700, 0 0 30px #ffb700;
+    margin-bottom: 25px;
+  }
+
+  /* Guthabenanzeige */
+  #coins {
+    font-weight: 600;
+    font-size: 1.3rem;
+    margin-bottom: 20px;
+    text-shadow: 0 0 4px #fff2a0;
+  }
+
+  /* Einsatzbereich */
+  .bet-controls {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 25px;
+    font-weight: 600;
+    font-size: 1.1rem;
+    color: #ffe27a;
+  }
+
+  #betInput {
+    width: 90px;
+    padding: 7px 10px;
+    font-size: 1.1rem;
+    border-radius: 15px;
+    border: none;
+    outline: none;
+    text-align: center;
+    font-weight: bold;
+    color: #332000;
+    box-shadow:
+      inset 1px 1px 4px #fff7a7,
+      inset -1px -1px 4px #f3d038;
+    transition: box-shadow 0.3s ease;
+  }
+
+  #betInput:focus {
+    box-shadow:
+      inset 0 0 12px #ffea00,
+      0 0 15px #ffe600;
+  }
+
+  /* Slot-Maschine Raster 5x3 */
+  .slot-machine {
+    display: grid;
+    grid-template-columns: repeat(5, 60px);
+    grid-template-rows: repeat(3, 60px);
+    gap: 12px;
+    justify-content: center;
+    margin-bottom: 20px;
+    perspective: 800px;
+  }
+
+  .reel-cell {
+    background: linear-gradient(145deg, #201100, #7f5200);
+    border-radius: 15px;
+    box-shadow:
+      inset 0 0 7px #ffd500aa,
+      0 4px 8px #804b00cc;
+    font-size: 2.8rem;
+    line-height: 60px;
+    color: #fffbe0;
+    text-shadow: 0 0 7px #ffd500cc;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    user-select: none;
+    backface-visibility: hidden;
+    transform-style: preserve-3d;
+    transition: transform 0.3s ease;
+  }
+
+  /* Gewinnlinien hervorheben */
+  .highlight {
+    box-shadow: 0 0 20px 5px #ffd500dd inset;
+    animation: glowPulse 1.5s ease-in-out infinite alternate;
+    color: #fff;
+    font-weight: 900;
+    transform: scale(1.15);
+    transition: transform 0.3s ease;
+  }
+
+  @keyframes glowPulse {
+    0% { box-shadow: 0 0 10px 2px #ffd500aa inset; }
+    100% { box-shadow: 0 0 25px 7px #ffd500ff inset; }
+  }
+
+  /* Animation Reel drehen */
+  .spinning {
+    animation: spinReel 0.5s linear infinite;
+  }
+
+  @keyframes spinReel {
+    0% { transform: rotateX(0deg);}
+    100% { transform: rotateX(360deg);}
+  }
+
+  /* Spin Button */
+  #spinButton {
+    background: linear-gradient(145deg, #ffe34f, #cc9f00);
+    border: none;
+    border-radius: 25px;
+    padding: 14px 45px;
+    font-weight: 700;
+    font-size: 1.5rem;
+    color: #4b3200;
+    cursor: pointer;
+    box-shadow:
+      0 0 15px #ffe74f,
+      inset 0 -2px 5px #bb7f00;
+    transition: all 0.3s ease;
+    user-select: none;
+  }
+
+  #spinButton:hover:not(:disabled) {
+    box-shadow:
+      0 0 25px #fff48b,
+      inset 0 -3px 6px #ffd900;
+    transform: scale(1.05);
+  }
+
+  #spinButton:disabled {
+    background: #7a6900;
+    cursor: not-allowed;
+    box-shadow: none;
+    color: #ccc37a;
+  }
+
+  /* Ergebnis Text */
+  #resultMessage {
+    margin-top: 20px;
+    font-weight: 700;
+    font-size: 1.2rem;
+    min-height: 30px;
+    color: #fff8b0;
+    text-shadow: 0 0 10px #ffd500cc;
+  }
+
+  /* Cheat Menü */
+  .cheat-container {
+    margin-top: 28px;
+    background: #3a1f00cc;
+    padding: 10px 15px;
+    border-radius: 15px;
+    font-size: 0.9rem;
+    color: #ffe17a;
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    align-items: center;
+  }
+
+  #cheatCoinsInput {
+    width: 80px;
+    border-radius: 12px;
+    border: none;
+    padding: 6px 8px;
+    font-weight: 700;
+    text-align: center;
+    color: #332000;
+    box-shadow:
+      inset 1px 1px 3px #fff7a7,
+      inset -1px -1px 3px #f3d038;
+    transition: box-shadow 0.3s ease;
+  }
+
+  #cheatCoinsInput:focus {
+    box-shadow:
+      inset 0 0 10px #ffd500,
+      0 0 7px #fffaa0;
+    outline: none;
+  }
+
+  #addCoinsButton {
+    background: #cc9f00;
+    border: none;
+    border-radius: 18px;
+    padding: 7px 15px;
+    font-weight: 700;
+    cursor: pointer;
+    color: #4b3200;
+    box-shadow:
+      0 0 15px #ffd500aa,
+      inset 0 -2px 5px #bb7f00;
+    transition: background-color 0.3s ease;
+    user-select: none;
+  }
+
+  #addCoinsButton:hover {
+    background: #ffe34f;
+  }
+</style>
+</head>
+<body>
+<div class="casino-container">
+  <h1>Koray's Casino</h1>
+  <div id="coins">Coins: 100</div>
+  <div class="bet-controls">
+    Einsatz: 
+    <button id="betMinus" aria-label="Einsatz verringern">-</button>
+    <input type="number" id="betInput" min="20" max="10000" step="20" value="20" />
+    <button id="betPlus" aria-label="Einsatz erhöhen">+</button>
+  </div>
+
+  <div class="slot-machine" id="slotMachine">
+    <!-- 5x3 = 15 Felder -->
+  </div>
+
+  <button id="spinButton">Spin</button>
+  <div id="resultMessage"></div>
+
+  <!-- Cheat-Menü beginnt hier -->
+  <div class="cheat-container">
+    <label for="cheatCoinsInput">Coins hinzufügen:</label>
+    <input type="number" id="cheatCoinsInput" min="1" step="1" placeholder="Anzahl" />
+    <button id="addCoinsButton">Hinzufügen</button>
+  </div>
+  <!-- Cheat-Menü Ende -->
+</div>
+
+<script>
+  // Variablen
+  const symbols = ["🍒","🍋","🍊","🍇","🔔","💎","7️⃣"];
+  const rows = 3;
+  const reels = 5;
+  let coins = 100;
+  let bet = 5;
+
+  // Gewinnlinien - 10 typische Linien (Index startet bei 0)
+  const winLines = [
+    [0,1,2,3,4],    // Obere Reihe
+    [5,6,7,8,9],    // Mittlere Reihe
+    [10,11,12,13,14], // Untere Reihe
+    [0,6,12,8,4],   // V-förmig
+    [10,6,2,8,14],  // Umgekehrtes V
+    [0,6,7,8,14],   // Diagonal leicht
+    [10,6,7,8,4],   // Diagonal leicht umgekehrt
+    [5,1,2,3,9],    // Oberrand Mitte
+    [5,11,12,13,9], // Unterrand Mitte
+    [0,1,7,13,14],  // Zickzack
+  ];
+
+  const slotMachine = document.getElementById('slotMachine');
+  const coinsDisplay = document.getElementById('coins');
+  const betInput = document.getElementById('betInput');
+  const spinButton = document.getElementById('spinButton');
+  const resultMessage = document.getElementById('resultMessage');
+  const betMinus = document.getElementById('betMinus');
+  const betPlus = document.getElementById('betPlus');
+
+  // Cheat-Menü Elemente
+  const cheatCoinsInput = document.getElementById('cheatCoinsInput');
+  const addCoinsButton = document.getElementById('addCoinsButton');
+
+  // Erstelle 15 Felder (5x3)
+  for(let i=0; i<rows*reels; i++){
+    const cell = document.createElement('div');
+    cell.classList.add('reel-cell');
+    slotMachine.appendChild(cell);
+  }
+
+  let finalResult = [];
+
+  // Guthaben anzeigen
+  function updateCoins(change){
+    coins += change;
+    if(coins < 0) coins = 0;
+    coinsDisplay.textContent = `Coins: ${coins}`;
+  }
+
+  // Einsatz aktualisieren und validieren
+function updateBet(value){
+  let v = parseInt(value);
+  if(isNaN(v) || v < 20) v = 20;
+  if(v > 10000) v = 10000;
+  bet = v;
+  betInput.value = bet;
+}
+
+
+  // Einsatz Buttons
+  betMinus.addEventListener('click', () => {
+    updateBet(bet - 5);
+  });
+  betPlus.addEventListener('click', () => {
+    updateBet(bet + 5);
+  });
+
+  betInput.addEventListener('change', () => {
+    updateBet(betInput.value);
+  });
+
+  // Gewinnfaktoren je Symbol (3+ Symbole)
+  function getPayoutFactor(symbolIndex, count){
+    if(count < 3) return 0;
+    switch(count){
+      case 3: return 5;
+      case 4: return 15;
+      case 5: return 40;
+      default: return 0;
+    }
+  }
+
+  // Spin Funktion mit Animation + Gewinnprüfung
+  function spin(){
+    if(coins < bet){
+      resultMessage.textContent = "Nicht genug Coins!";
+      return;
+    }
+
+    // Einsatz abziehen
+    updateCoins(-bet);
+
+    spinButton.disabled = true;
+    resultMessage.textContent = "Dreht...";
+
+    const cells = [...slotMachine.children];
+    // Alle Highlight-Klassen entfernen
+    cells.forEach(c => c.classList.remove('highlight'));
+
+    // Animation Start (Räder drehen)
+    let spinCount = 0;
+    const maxSpin = 25; // Anzahl Animation-Schritte
+
+    // Für jede Spalte die zufällige Symbole zwischendurch zeigen (Animation)
+    const spinInterval = setInterval(() => {
+      for(let r=0; r<rows; r++){
+        for(let c=0; c<reels; c++){
+          const cellIndex = r*reels + c;
+          const randomSym = symbols[Math.floor(Math.random()*symbols.length)];
+          cells[cellIndex].textContent = randomSym;
+          cells[cellIndex].classList.add('spinning');
+        }
+      }
+
+      spinCount++;
+      if(spinCount >= maxSpin){
+        clearInterval(spinInterval);
+        // Animation aus
+        cells.forEach(c => c.classList.remove('spinning'));
+
+        // Endergebnis bestimmen mit realistischen Gewinnwahrscheinlichkeiten
+        finalResult = [];
+
+        // Realistische Gewinnchance:
+        // Ca. 25% Chance auf Gewinnlinie (mind. 3 gleiche in Reihe)
+        // Sonst random Symbole
+
+        // Wir füllen mit zufälligen Symbolen
+        for(let r=0; r<rows; r++){
+          for(let c=0; c<reels; c++){
+            finalResult[r*reels + c] = Math.floor(Math.random()*symbols.length);
+          }
+        }
+
+        // Versuchen Gewinnlinien mit 25% Chance anzulegen
+        if(Math.random() < 0.25){
+          // Gewinnlinie auswählen
+          const lineIndex = Math.floor(Math.random() * winLines.length);
+          const line = winLines[lineIndex];
+
+          // Symbol für Gewinnlinie zufällig wählen
+          const symIndex = Math.floor(Math.random()*symbols.length);
+
+          // Mindestens 3 gleiche auf Gewinnlinie setzen
+          let count = 3 + Math.floor(Math.random()*3); // 3 bis 5
+          if(count > line.length) count = line.length;
+
+          for(let i=0; i<count; i++){
+            finalResult[line[i]] = symIndex;
+          }
+          // Andere Zellen bleiben random
+          for(let i=0; i<finalResult.length; i++){
+            if(finalResult[i] === undefined) finalResult[i] = Math.floor(Math.random()*symbols.length);
+          }
+        }
+
+        // Ergebnis anzeigen
+        for(let i=0; i<finalResult.length; i++){
+          cells[i].textContent = symbols[finalResult[i]];
+        }
+
+        checkWin();
+        spinButton.disabled = false;
+      }
+    }, 50);
+  }
+
+  // Gewinnlinien prüfen & markieren
+  function checkWin(){
+    let totalWin = 0;
+    const cells = [...slotMachine.children];
+    let anyWin = false;
+
+    for(let line of winLines){
+      const firstSym = finalResult[line[0]];
+      if(firstSym === undefined) continue;
+
+      // Prüfe auf mindestens 3 gleiche Symbole von links in der Linie
+      let count = 1;
+      for(let i=1; i<line.length; i++){
+        if(finalResult[line[i]] === firstSym){
+          count++;
+        } else {
+          break;
+        }
+      }
+
+      if(count >=3){
+        anyWin = true;
+        const factor = getPayoutFactor(firstSym, count);
+        totalWin += bet * factor;
+
+        // Gewinnzellen hervorheben
+        for(let i=0; i<count; i++){
+          cells[line[i]].classList.add('highlight');
+        }
+      }
+    }
+
+    if(anyWin){
+      updateCoins(totalWin);
+      resultMessage.textContent = `🎉 Du hast ${totalWin} Coins gewonnen!`;
+    } else {
+      resultMessage.textContent = "😞 Kein Gewinn, versuch's nochmal!";
+    }
+  }
+
+  // Cheat-Menü: Coins hinzufügen
+  addCoinsButton.addEventListener('click', () => {
+    const val = parseInt(cheatCoinsInput.value);
+    if(!isNaN(val) && val > 0){
+      updateCoins(val);
+      cheatCoinsInput.value = '';
+      resultMessage.textContent = `💰 Cheat: ${val} Coins hinzugefügt!`;
+    }
+  });
+
+  // Button Events
+  spinButton.addEventListener('click', spin);
+
+  // Initial Werte
+  updateCoins(0);
+  updateBet(bet);
+</script>
+</body>
+</html>
