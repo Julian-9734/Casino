@@ -237,7 +237,7 @@
   <div class="bet-controls">
     Einsatz: 
     <button id="betMinus" aria-label="Einsatz verringern">-</button>
-    <input type="number" id="betInput" min="20" max="10000" step="20" value="20" />
+    <input type="number" id="betInput" min="20" max="100000000" step="20" value="20" />
     <button id="betPlus" aria-label="Einsatz erhöhen">+</button>
   </div>
 
@@ -311,7 +311,7 @@
 function updateBet(value){
   let v = parseInt(value);
   if(isNaN(v) || v < 20) v = 20;
-  if(v > 10000) v = 10000;
+  if(v > 100000000) v = 100000000;
   bet = v;
   betInput.value = bet;
 }
